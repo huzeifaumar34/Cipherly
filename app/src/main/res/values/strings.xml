@@ -6,4 +6,21 @@
     <string name="home_offline_badge">100% offline</string>
     <string name="home_stage_title">Fase 0 · Fundação do projeto</string>
     <string name="home_security_notice">A camada de criptografia e o armazenamento seguro ainda estão em desenvolvimento. Não guarde segredos nesta versão.</string>
+    <string name="onboarding_title">Crie a sua senha mestra</string>
+    <string name="onboarding_description">É a única chave do seu cofre. Não é guardada em lado nenhum e não pode ser recuperada se a esquecer. Mínimo de 12 caracteres.</string>
+    <string name="field_master_password">Senha mestra</string>
+    <string name="field_confirm_password">Confirmar senha mestra</string>
+    <string name="action_create_vault">Criar cofre</string>
+    <string name="action_unlock">Desbloquear</string>
+    <string name="action_lock">Bloquear</string>
+    <string name="working">A processar…</string>
+    <string name="lock_title">Cofre bloqueado</string>
+    <string name="unlocked_title">Cofre desbloqueado</string>
+    <string name="unlocked_description">Os itens (senhas, chaves de API e notas) chegam na próxima fase.</string>
+    <string name="error_too_short">A senha deve ter pelo menos 12 caracteres.</string>
+    <string name="error_mismatch">As senhas não coincidem.</string>
+    <string name="error_wrong_password">Senha incorreta.</string>
+    <string name="error_throttled">Demasiadas tentativas. Tente novamente em %1$d s.</string>
+    <string name="error_corrupted">Não foi possível ler os dados do cofre.</string>
+    <string name="error_save_failed">Não foi possível guardar o cofre.</string>
 </resources>

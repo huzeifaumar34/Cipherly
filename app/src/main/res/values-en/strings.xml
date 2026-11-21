@@ -6,4 +6,21 @@
     <string name="home_offline_badge">100% offline</string>
     <string name="home_stage_title">Phase 0 · Project foundation</string>
     <string name="home_security_notice">Encryption and secure storage are still under development. Do not store secrets in this version.</string>
+    <string name="onboarding_title">Create your master password</string>
+    <string name="onboarding_description">It is the only key to your vault. It is stored nowhere and cannot be recovered if you forget it. Minimum 12 characters.</string>
+    <string name="field_master_password">Master password</string>
+    <string name="field_confirm_password">Confirm master password</string>
+    <string name="action_create_vault">Create vault</string>
+    <string name="action_unlock">Unlock</string>
+    <string name="action_lock">Lock</string>
+    <string name="working">Working…</string>
+    <string name="lock_title">Vault locked</string>
+    <string name="unlocked_title">Vault unlocked</string>
+    <string name="unlocked_description">Items (passwords, API keys and notes) arrive in the next phase.</string>
+    <string name="error_too_short">The password must be at least 12 characters.</string>
+    <string name="error_mismatch">The passwords do not match.</string>
+    <string name="error_wrong_password">Wrong password.</string>
+    <string name="error_throttled">Too many attempts. Try again in %1$d s.</string>
+    <string name="error_corrupted">The vault data could not be read.</string>
+    <string name="error_save_failed">The vault could not be saved.</string>
 </resources>
