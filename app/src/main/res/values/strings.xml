@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cipherly</string>
+    <string name="home_title">O seu cofre privado.</string>
+    <string name="home_description">Palavras-passe, chaves de API e notas seguras. Tudo guardado localmente, sem ligação à internet.</string>
+    <string name="home_offline_badge">100% offline</string>
+    <string name="home_stage_title">Fase 0 · Fundação do projeto</string>
+    <string name="home_security_notice">A camada de criptografia e o armazenamento seguro ainda estão em desenvolvimento. Não guarde segredos nesta versão.</string>
+</resources>

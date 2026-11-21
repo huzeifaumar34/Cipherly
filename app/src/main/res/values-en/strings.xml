@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cipherly</string>
+    <string name="home_title">Your private vault.</string>
+    <string name="home_description">Passwords, API keys and secure notes. Stored locally, with no internet connection.</string>
+    <string name="home_offline_badge">100% offline</string>
+    <string name="home_stage_title">Phase 0 · Project foundation</string>
+    <string name="home_security_notice">Encryption and secure storage are still under development. Do not store secrets in this version.</string>
+</resources>
