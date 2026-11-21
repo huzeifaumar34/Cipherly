@@ -5,12 +5,22 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import app.cipherly.data.settings.ThemeMode
+import app.cipherly.data.settings.UserPreferences
+import app.cipherly.data.settings.UserPreferencesDataStore
 import app.cipherly.ui.home.HomeScreen
 import app.cipherly.ui.theme.CipherlyTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var userPreferences: UserPreferencesDataStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -24,7 +34,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            CipherlyTheme(darkTheme = true) {
+            val prefs by userPreferences.preferences.collectAsState(initial = UserPreferences())
+            val darkTheme = when (prefs.themeMode) {
+                ThemeMode.DARK -> true
+                ThemeMode.LIGHT -> false
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+            CipherlyTheme(darkTheme = darkTheme) {
                 HomeScreen()
             }
         }
