@@ -37,7 +37,7 @@ O APK debug é criado em `app/build/outputs/apk/debug/app-debug.apk`.
 | Fase | Estado |
 |---|---|
 | 0. Setup Android, Hilt, tema, CI | Concluída |
-| 1. Núcleo criptográfico: Argon2id, AES-GCM, wrappers e testes | Em implementação (AES-GCM e Argon2id feitos, falta wrapping de chaves) |
+| 1. Núcleo criptográfico: Argon2id, AES-GCM, wrappers e testes | Em implementação (AES-GCM, Argon2id e wrapping de chaves feitos) |
 | 2. Cofre, onboarding e bloqueio | Pendente |
 | 3. Biometria e PIN | Pendente |
 | 4. Itens com Room + SQLCipher | Pendente |
