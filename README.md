@@ -41,7 +41,7 @@ O APK debug é criado em `app/build/outputs/apk/debug/app-debug.apk`.
 | 2. Cofre, onboarding e bloqueio | Em implementação (senha mestra, bloqueio, auto-lock e limite de tentativas feitos) |
 | 3. Biometria e PIN | Em implementação (PIN com Keystore e limite de 5 falhas, biometria forte) |
 | 4. Itens com Room + SQLCipher | Concluída |
-| 5. Gerador, clipboard e auto-lock | Em implementação (gerador, clipboard sensível com limpeza, bloqueio ao desligar o ecrã) |
+| 5. Gerador, clipboard e auto-lock | Concluída |
 | 6. Backup cifrado | Pendente |
 | 7. Polimento e release | Pendente |
 | 8. Revisão de segurança | Pendente |
