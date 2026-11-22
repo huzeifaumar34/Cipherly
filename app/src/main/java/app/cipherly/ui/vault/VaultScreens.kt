@@ -191,6 +191,7 @@ fun UnlockedScreen(
     biometricEnabled: Boolean,
     biometricAvailable: Boolean,
     onLock: () -> Unit,
+    onBack: () -> Unit,
     onEnablePin: (CharArray, CharArray) -> Unit,
     onDisablePin: () -> Unit,
     onEnableBiometric: () -> Unit,
@@ -232,7 +233,8 @@ fun UnlockedScreen(
             TextButton(onClick = onEnableBiometric) { Text(stringResource(R.string.action_enable_biometric)) }
         }
         Spacer(Modifier.size(16.dp))
-        Button(onClick = onLock) { Text(stringResource(R.string.action_lock)) }
+        Button(onClick = onBack) { Text(stringResource(R.string.action_back)) }
+        TextButton(onClick = onLock) { Text(stringResource(R.string.action_lock)) }
     }
     if (showPinDialog) {
         AlertDialog(
