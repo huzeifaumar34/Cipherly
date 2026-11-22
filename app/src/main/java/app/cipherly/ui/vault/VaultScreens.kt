@@ -185,11 +185,20 @@ fun LockScreen(
 }
 
 @Composable
+private fun durationLabel(seconds: Int): String =
+    if (seconds < 60) stringResource(R.string.duration_seconds, seconds)
+    else stringResource(R.string.duration_minutes, seconds / 60)
+
+@Composable
 fun UnlockedScreen(
     state: VaultUiState,
     pinEnabled: Boolean,
     biometricEnabled: Boolean,
     biometricAvailable: Boolean,
+    autoLockSeconds: Int,
+    clipboardSeconds: Int,
+    onCycleAutoLock: () -> Unit,
+    onCycleClipboard: () -> Unit,
     onLock: () -> Unit,
     onBack: () -> Unit,
     onEnablePin: (CharArray, CharArray) -> Unit,
@@ -231,6 +240,12 @@ fun UnlockedScreen(
             TextButton(onClick = onDisableBiometric) { Text(stringResource(R.string.action_disable_biometric)) }
         } else if (biometricAvailable) {
             TextButton(onClick = onEnableBiometric) { Text(stringResource(R.string.action_enable_biometric)) }
+        }
+        TextButton(onClick = onCycleAutoLock) {
+            Text(stringResource(R.string.setting_auto_lock, durationLabel(autoLockSeconds)))
+        }
+        TextButton(onClick = onCycleClipboard) {
+            Text(stringResource(R.string.setting_clipboard, durationLabel(clipboardSeconds)))
         }
         Spacer(Modifier.size(16.dp))
         Button(onClick = onBack) { Text(stringResource(R.string.action_back)) }

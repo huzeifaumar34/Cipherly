@@ -4,7 +4,17 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import app.cipherly.biometric.BiometricUnlock
+import app.cipherly.clipboard.ClipboardHelper
+import app.cipherly.domain.model.Choices
+import kotlinx.coroutines.launch
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
@@ -36,6 +46,25 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var biometric: BiometricUnlock
+
+    @Inject
+    lateinit var clipboard: ClipboardHelper
+
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            vaultViewModel.lock()
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        clipboard.copy(text)
+        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(screenOffReceiver)
+        super.onDestroy()
+    }
 
     private val vaultViewModel: VaultViewModel by viewModels()
     private val itemsViewModel: ItemsViewModel by viewModels()
@@ -83,6 +112,13 @@ class MainActivity : FragmentActivity() {
             setRecentsScreenshotEnabled(false)
         }
 
+        ContextCompat.registerReceiver(
+            this,
+            screenOffReceiver,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+
         setContent {
             val prefs by userPreferences.preferences.collectAsState(initial = UserPreferences())
             autoLockSeconds = prefs.autoLockSeconds
@@ -128,6 +164,7 @@ class MainActivity : FragmentActivity() {
                                 error = itemError,
                                 onSave = itemsViewModel::save,
                                 onDelete = itemsViewModel::delete,
+                                onCopy = ::copyToClipboard,
                                 onBack = itemsViewModel::back,
                             )
                             ItemsScreen.Security -> UnlockedScreen(
@@ -135,6 +172,22 @@ class MainActivity : FragmentActivity() {
                                 pinEnabled = pinEnabled,
                                 biometricEnabled = biometricEnabled,
                                 biometricAvailable = biometric.isAvailable(),
+                                autoLockSeconds = prefs.autoLockSeconds,
+                                clipboardSeconds = prefs.clipboardClearSeconds,
+                                onCycleAutoLock = {
+                                    lifecycleScope.launch {
+                                        userPreferences.setAutoLockSeconds(
+                                            Choices.next(Choices.AUTO_LOCK_SECONDS, prefs.autoLockSeconds),
+                                        )
+                                    }
+                                },
+                                onCycleClipboard = {
+                                    lifecycleScope.launch {
+                                        userPreferences.setClipboardClearSeconds(
+                                            Choices.next(Choices.CLIPBOARD_SECONDS, prefs.clipboardClearSeconds),
+                                        )
+                                    }
+                                },
                                 onLock = vaultViewModel::lock,
                                 onBack = itemsViewModel::back,
                                 onEnablePin = { pin, confirm -> vaultViewModel.enablePin(pin, confirm) { } },

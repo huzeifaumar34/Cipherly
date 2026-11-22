@@ -139,8 +139,10 @@ fun ItemEditScreen(
     error: ItemError?,
     onSave: (ItemType, String, String, String, String, String) -> Unit,
     onDelete: () -> Unit,
+    onCopy: (String) -> Unit,
     onBack: () -> Unit,
 ) {
+    var showGenerator by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf(initial?.type ?: ItemType.PASSWORD) }
     var title by remember { mutableStateOf(initial?.title ?: "") }
     var username by remember { mutableStateOf(initial?.username ?: "") }
@@ -213,10 +215,32 @@ fun ItemEditScreen(
             keyboardOptions = KeyboardOptions(keyboardType = if (hidden) KeyboardType.Password else KeyboardType.Text),
             modifier = Modifier.fillMaxWidth(),
         )
-        if (type != ItemType.NOTE) {
-            TextButton(onClick = { reveal = !reveal }) {
-                Text(stringResource(if (reveal) R.string.action_hide else R.string.action_show))
+        Row {
+            if (type != ItemType.NOTE) {
+                TextButton(onClick = { reveal = !reveal }) {
+                    Text(stringResource(if (reveal) R.string.action_hide else R.string.action_show))
+                }
             }
+            TextButton(onClick = { onCopy(secret) }, enabled = secret.isNotEmpty()) {
+                Text(stringResource(R.string.action_copy))
+            }
+            if (type == ItemType.PASSWORD && username.isNotEmpty()) {
+                TextButton(onClick = { onCopy(username) }) { Text(stringResource(R.string.action_copy_username)) }
+            }
+            if (type == ItemType.PASSWORD) {
+                TextButton(onClick = { showGenerator = !showGenerator }) {
+                    Text(stringResource(R.string.action_generator))
+                }
+            }
+        }
+        if (showGenerator && type == ItemType.PASSWORD) {
+            GeneratorPanel(onUse = {
+                secret = it
+                reveal = true
+                showGenerator = false
+            })
+        }
+        if (type != ItemType.NOTE) {
             if (type == ItemType.PASSWORD) {
                 OutlinedTextField(
                     value = url,
