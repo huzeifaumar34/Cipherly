@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,6 +55,13 @@ class VaultRepository internal constructor(
 
     private val _pinEnabled = MutableStateFlow(pin?.isEnabled == true)
     val pinEnabled: StateFlow<Boolean> = _pinEnabled.asStateFlow()
+
+    private val lockListeners = CopyOnWriteArrayList<() -> Unit>()
+
+    /** Called synchronously every time the vault locks, so dependants can drop their key. */
+    fun addOnLockListener(listener: () -> Unit) {
+        lockListeners.add(listener)
+    }
 
     @Volatile private var vaultKey: ByteArray? = null
     private var failures = 0
@@ -132,6 +140,7 @@ class VaultRepository internal constructor(
     fun lock() {
         vaultKey?.fill(0)
         vaultKey = null
+        lockListeners.forEach { it() }
         if (_state.value == VaultState.UNLOCKED) _state.value = VaultState.LOCKED
     }
 
