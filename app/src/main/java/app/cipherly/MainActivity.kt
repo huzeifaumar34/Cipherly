@@ -3,7 +3,8 @@ package app.cipherly
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
+import app.cipherly.biometric.BiometricUnlock
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
@@ -23,14 +24,36 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var userPreferences: UserPreferencesDataStore
 
+    @Inject
+    lateinit var biometric: BiometricUnlock
+
     private val vaultViewModel: VaultViewModel by viewModels()
     private var backgroundedAt = 0L
     private var autoLockSeconds = UserPreferences().autoLockSeconds
+
+    private fun enableBiometric() {
+        val key = vaultViewModel.keyCopy() ?: return
+        biometric.enable(
+            this, key,
+            getString(R.string.biometric_prompt_title),
+            getString(R.string.action_cancel),
+        ) { }
+    }
+
+    private fun unlockWithBiometric() {
+        biometric.unlock(
+            this,
+            getString(R.string.biometric_prompt_title),
+            getString(R.string.action_cancel),
+            onKey = vaultViewModel::unlockWithKey,
+            onFailure = { },
+        )
+    }
 
     override fun onStop() {
         super.onStop()
@@ -59,6 +82,8 @@ class MainActivity : ComponentActivity() {
             autoLockSeconds = prefs.autoLockSeconds
             val vaultState by vaultViewModel.vaultState.collectAsState()
             val ui by vaultViewModel.ui.collectAsState()
+            val pinEnabled by vaultViewModel.pinEnabled.collectAsState()
+            val biometricEnabled by biometric.enabled.collectAsState()
             val darkTheme = when (prefs.themeMode) {
                 ThemeMode.DARK -> true
                 ThemeMode.LIGHT -> false
@@ -67,8 +92,25 @@ class MainActivity : ComponentActivity() {
             CipherlyTheme(darkTheme = darkTheme) {
                 when (vaultState) {
                     VaultState.NO_VAULT -> OnboardingScreen(ui, vaultViewModel::createVault)
-                    VaultState.LOCKED -> LockScreen(ui, vaultViewModel::unlock)
-                    VaultState.UNLOCKED -> UnlockedScreen(vaultViewModel::lock)
+                    VaultState.LOCKED -> LockScreen(
+                        state = ui,
+                        pinEnabled = pinEnabled,
+                        biometricEnabled = biometricEnabled,
+                        onUnlock = vaultViewModel::unlock,
+                        onUnlockPin = vaultViewModel::unlockWithPin,
+                        onBiometric = ::unlockWithBiometric,
+                    )
+                    VaultState.UNLOCKED -> UnlockedScreen(
+                        state = ui,
+                        pinEnabled = pinEnabled,
+                        biometricEnabled = biometricEnabled,
+                        biometricAvailable = biometric.isAvailable(),
+                        onLock = vaultViewModel::lock,
+                        onEnablePin = { pin, confirm -> vaultViewModel.enablePin(pin, confirm) { } },
+                        onDisablePin = vaultViewModel::disablePin,
+                        onEnableBiometric = ::enableBiometric,
+                        onDisableBiometric = biometric::disable,
+                    )
                 }
             }
         }

@@ -23,4 +23,21 @@
     <string name="error_throttled">Too many attempts. Try again in %1$d s.</string>
     <string name="error_corrupted">The vault data could not be read.</string>
     <string name="error_save_failed">The vault could not be saved.</string>
+    <string name="security_title">Quick unlock</string>
+    <string name="pin_dialog_title">Set a 6-digit PIN</string>
+    <string name="field_pin">PIN</string>
+    <string name="field_confirm_pin">Confirm PIN</string>
+    <string name="action_use_pin">Use PIN</string>
+    <string name="action_use_password">Use master password</string>
+    <string name="action_use_biometric">Use biometrics</string>
+    <string name="action_enable_pin">Enable PIN</string>
+    <string name="action_disable_pin">Disable PIN</string>
+    <string name="action_enable_biometric">Enable biometrics</string>
+    <string name="action_disable_biometric">Disable biometrics</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="biometric_prompt_title">Unlock Cipherly</string>
+    <string name="error_pin_invalid">The PIN must be exactly 6 digits.</string>
+    <string name="error_pin_wrong">Wrong PIN. %1$d attempts left.</string>
+    <string name="error_pin_disabled">PIN disabled after too many failures. Use your master password.</string>
 </resources>

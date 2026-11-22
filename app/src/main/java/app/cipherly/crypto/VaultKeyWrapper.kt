@@ -75,7 +75,7 @@ class VaultKeyWrapper(
     /** Creates a new vault key protected by [password]. Returns the bundle to store and the live key. */
     fun create(password: CharArray): Pair<WrappedVaultKey, ByteArray> {
         val vaultKey = ByteArray(AesGcmCipher.KEY_BYTES).also(random::nextBytes)
-        return wrap(vaultKey, password) to vaultKey
+        return wrapKey(vaultKey, password) to vaultKey
     }
 
     /** Returns the vault key, or throws [CryptoException] if the password is wrong or data was altered. */
@@ -96,13 +96,14 @@ class VaultKeyWrapper(
     ): WrappedVaultKey {
         val vaultKey = unlock(oldPassword, bundle)
         try {
-            return wrap(vaultKey, newPassword)
+            return wrapKey(vaultKey, newPassword)
         } finally {
             vaultKey.fill(0)
         }
     }
 
-    private fun wrap(vaultKey: ByteArray, password: CharArray): WrappedVaultKey {
+    /** Wraps an existing [vaultKey] under [password] with a fresh salt. */
+    fun wrapKey(vaultKey: ByteArray, password: CharArray): WrappedVaultKey {
         val salt = deriver.newSalt()
         val kek = deriver.derive(password, salt, defaultParams)
         try {

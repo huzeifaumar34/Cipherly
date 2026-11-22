@@ -2,6 +2,7 @@ package app.cipherly.vault
 
 import android.content.Context
 import app.cipherly.crypto.CryptoException
+import app.cipherly.crypto.KeystoreSecretBox
 import app.cipherly.crypto.VaultKeyWrapper
 import app.cipherly.crypto.WrappedVaultKey
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,16 +34,26 @@ class VaultRepository internal constructor(
     private val file: File,
     private val wrapper: VaultKeyWrapper,
     private val clock: () -> Long,
+    private val pin: PinUnlockStore? = null,
 ) {
     @Inject
     constructor(@ApplicationContext context: Context) : this(
         file = File(context.filesDir, KEY_FILE_NAME),
         wrapper = VaultKeyWrapper(),
         clock = System::currentTimeMillis,
+        pin = PinUnlockStore(
+            bundleFile = File(context.filesDir, "pin_unlock.bin"),
+            counterFile = File(context.filesDir, "pin_attempts.txt"),
+            box = KeystoreSecretBox("cipherly_pin_box"),
+            wrapper = VaultKeyWrapper(),
+        ),
     )
 
     private val _state = MutableStateFlow(if (file.exists()) VaultState.LOCKED else VaultState.NO_VAULT)
     val state: StateFlow<VaultState> = _state.asStateFlow()
+
+    private val _pinEnabled = MutableStateFlow(pin?.isEnabled == true)
+    val pinEnabled: StateFlow<Boolean> = _pinEnabled.asStateFlow()
 
     @Volatile private var vaultKey: ByteArray? = null
     private var failures = 0
@@ -76,6 +87,45 @@ class VaultRepository internal constructor(
             blockedUntil = clock() + backoffMillis(failures)
             UnlockResult.WrongPassword
         }
+    }
+
+    /** Sets up a PIN for quick unlock. Requires the vault to be unlocked. Returns false otherwise. */
+    suspend fun enablePin(code: CharArray): Boolean = withContext(Dispatchers.Default) {
+        val key = vaultKey ?: return@withContext false
+        val store = pin ?: return@withContext false
+        store.enable(code, key)
+        _pinEnabled.value = true
+        true
+    }
+
+    suspend fun unlockWithPin(code: CharArray): PinResult = withContext(Dispatchers.Default) {
+        val store = pin ?: return@withContext PinResult.Disabled
+        val result = store.unlock(code)
+        when (result) {
+            is PinResult.Success -> {
+                vaultKey = result.vaultKey
+                failures = 0
+                _state.value = VaultState.UNLOCKED
+            }
+            PinResult.Disabled -> _pinEnabled.value = false
+            is PinResult.Wrong -> Unit
+        }
+        result
+    }
+
+    fun disablePin() {
+        pin?.disable()
+        _pinEnabled.value = false
+    }
+
+    /** A copy of the live vault key for a quick-unlock method to wrap; the caller must wipe it. */
+    fun keyCopy(): ByteArray? = vaultKey?.copyOf()
+
+    /** Unlocks with a key recovered by a quick-unlock method (e.g. biometrics). */
+    fun unlockWithKey(key: ByteArray) {
+        vaultKey = key
+        failures = 0
+        _state.value = VaultState.UNLOCKED
     }
 
     /** Wipes the in-memory key. The vault must be unlocked again with the master password. */
