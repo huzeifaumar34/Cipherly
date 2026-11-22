@@ -64,4 +64,20 @@
     <string name="action_back">Back</string>
     <string name="error_title_required">The title is required.</string>
     <string name="error_too_long">A field is too long.</string>
+    <string name="copied">Copied. It will be cleared automatically.</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_copy_username">Copy username</string>
+    <string name="action_generator">Generator</string>
+    <string name="action_generate">Generate</string>
+    <string name="action_use_generated">Use this password</string>
+    <string name="generator_length">Length: %1$d</string>
+    <string name="generator_lower">Lowercase (a-z)</string>
+    <string name="generator_upper">Uppercase (A-Z)</string>
+    <string name="generator_digits">Numbers (0-9)</string>
+    <string name="generator_symbols">Symbols (!@#…)</string>
+    <string name="generator_avoid_ambiguous">Avoid ambiguous characters (I, l, 1, O, 0)</string>
+    <string name="setting_auto_lock">Auto-lock: %1$s</string>
+    <string name="setting_clipboard">Clear clipboard after: %1$s</string>
+    <string name="duration_seconds">%1$d s</string>
+    <string name="duration_minutes">%1$d min</string>
 </resources>

@@ -64,4 +64,20 @@
     <string name="action_back">Voltar</string>
     <string name="error_title_required">O título é obrigatório.</string>
     <string name="error_too_long">Algum campo é demasiado longo.</string>
+    <string name="copied">Copiado. Será limpo automaticamente.</string>
+    <string name="action_copy">Copiar</string>
+    <string name="action_copy_username">Copiar utilizador</string>
+    <string name="action_generator">Gerador</string>
+    <string name="action_generate">Gerar</string>
+    <string name="action_use_generated">Usar esta senha</string>
+    <string name="generator_length">Comprimento: %1$d</string>
+    <string name="generator_lower">Minúsculas (a-z)</string>
+    <string name="generator_upper">Maiúsculas (A-Z)</string>
+    <string name="generator_digits">Números (0-9)</string>
+    <string name="generator_symbols">Símbolos (!@#…)</string>
+    <string name="generator_avoid_ambiguous">Evitar caracteres ambíguos (I, l, 1, O, 0)</string>
+    <string name="setting_auto_lock">Bloqueio automático: %1$s</string>
+    <string name="setting_clipboard">Limpar clipboard após: %1$s</string>
+    <string name="duration_seconds">%1$d s</string>
+    <string name="duration_minutes">%1$d min</string>
 </resources>
