@@ -40,7 +40,7 @@ O APK debug é criado em `app/build/outputs/apk/debug/app-debug.apk`.
 | 1. Núcleo criptográfico: Argon2id, AES-GCM, wrappers e testes | Concluída |
 | 2. Cofre, onboarding e bloqueio | Em implementação (senha mestra, bloqueio, auto-lock e limite de tentativas feitos) |
 | 3. Biometria e PIN | Em implementação (PIN com Keystore e limite de 5 falhas, biometria forte) |
-| 4. Itens com Room + SQLCipher | Pendente |
+| 4. Itens com Room + SQLCipher | Concluída |
 | 5. Gerador, clipboard e auto-lock | Pendente |
 | 6. Backup cifrado | Pendente |
 | 7. Polimento e release | Pendente |

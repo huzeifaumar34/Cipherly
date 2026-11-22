@@ -15,6 +15,11 @@ import app.cipherly.data.settings.UserPreferencesDataStore
 import app.cipherly.ui.vault.LockScreen
 import app.cipherly.ui.vault.OnboardingScreen
 import app.cipherly.ui.vault.UnlockedScreen
+import androidx.activity.compose.BackHandler
+import app.cipherly.ui.items.ItemEditScreen
+import app.cipherly.ui.items.ItemListScreen
+import app.cipherly.ui.items.ItemsScreen
+import app.cipherly.ui.items.ItemsViewModel
 import app.cipherly.ui.vault.VaultViewModel
 import app.cipherly.vault.VaultState
 import android.os.SystemClock
@@ -33,6 +38,7 @@ class MainActivity : FragmentActivity() {
     lateinit var biometric: BiometricUnlock
 
     private val vaultViewModel: VaultViewModel by viewModels()
+    private val itemsViewModel: ItemsViewModel by viewModels()
     private var backgroundedAt = 0L
     private var autoLockSeconds = UserPreferences().autoLockSeconds
 
@@ -100,17 +106,44 @@ class MainActivity : FragmentActivity() {
                         onUnlockPin = vaultViewModel::unlockWithPin,
                         onBiometric = ::unlockWithBiometric,
                     )
-                    VaultState.UNLOCKED -> UnlockedScreen(
-                        state = ui,
-                        pinEnabled = pinEnabled,
-                        biometricEnabled = biometricEnabled,
-                        biometricAvailable = biometric.isAvailable(),
-                        onLock = vaultViewModel::lock,
-                        onEnablePin = { pin, confirm -> vaultViewModel.enablePin(pin, confirm) { } },
-                        onDisablePin = vaultViewModel::disablePin,
-                        onEnableBiometric = ::enableBiometric,
-                        onDisableBiometric = biometric::disable,
-                    )
+                    VaultState.UNLOCKED -> {
+                        val screen by itemsViewModel.screen.collectAsState()
+                        val items by itemsViewModel.items.collectAsState()
+                        val query by itemsViewModel.query.collectAsState()
+                        val editing by itemsViewModel.editing.collectAsState()
+                        val itemError by itemsViewModel.error.collectAsState()
+                        BackHandler(enabled = screen != ItemsScreen.List) { itemsViewModel.back() }
+                        when (screen) {
+                            ItemsScreen.List -> ItemListScreen(
+                                items = items,
+                                query = query,
+                                onQuery = itemsViewModel::setQuery,
+                                onAdd = itemsViewModel::openNew,
+                                onOpen = itemsViewModel::openEdit,
+                                onSecurity = itemsViewModel::openSecurity,
+                                onLock = vaultViewModel::lock,
+                            )
+                            ItemsScreen.Edit -> ItemEditScreen(
+                                initial = editing,
+                                error = itemError,
+                                onSave = itemsViewModel::save,
+                                onDelete = itemsViewModel::delete,
+                                onBack = itemsViewModel::back,
+                            )
+                            ItemsScreen.Security -> UnlockedScreen(
+                                state = ui,
+                                pinEnabled = pinEnabled,
+                                biometricEnabled = biometricEnabled,
+                                biometricAvailable = biometric.isAvailable(),
+                                onLock = vaultViewModel::lock,
+                                onBack = itemsViewModel::back,
+                                onEnablePin = { pin, confirm -> vaultViewModel.enablePin(pin, confirm) { } },
+                                onDisablePin = vaultViewModel::disablePin,
+                                onEnableBiometric = ::enableBiometric,
+                                onDisableBiometric = biometric::disable,
+                            )
+                        }
+                    }
                 }
             }
         }
