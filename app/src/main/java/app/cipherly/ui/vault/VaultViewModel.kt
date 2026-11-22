@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.cipherly.vault.PasswordCheck
 import app.cipherly.vault.PasswordPolicy
+import app.cipherly.vault.PinResult
+import app.cipherly.vault.PinUnlockStore
 import app.cipherly.vault.UnlockResult
 import app.cipherly.vault.VaultRepository
 import app.cipherly.vault.VaultState
@@ -14,12 +16,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class VaultError { TOO_SHORT, MISMATCH, WRONG_PASSWORD, THROTTLED, CORRUPTED, SAVE_FAILED }
+enum class VaultError { TOO_SHORT, MISMATCH, WRONG_PASSWORD, THROTTLED, CORRUPTED, SAVE_FAILED, PIN_INVALID, PIN_WRONG, PIN_DISABLED }
 
 data class VaultUiState(
     val busy: Boolean = false,
     val error: VaultError? = null,
     val retrySeconds: Long = 0,
+    val pinRemaining: Int = 0,
 )
 
 @HiltViewModel
@@ -28,6 +31,7 @@ class VaultViewModel @Inject constructor(
 ) : ViewModel() {
 
     val vaultState: StateFlow<VaultState> = repository.state
+    val pinEnabled: StateFlow<Boolean> = repository.pinEnabled
 
     private val _ui = MutableStateFlow(VaultUiState())
     val ui: StateFlow<VaultUiState> = _ui.asStateFlow()
@@ -70,6 +74,54 @@ class VaultViewModel @Inject constructor(
     }
 
     fun lock() = repository.lock()
+
+    fun enablePin(pin: CharArray, confirmation: CharArray, onSuccess: () -> Unit) {
+        if (!PinUnlockStore.isValidPin(pin)) {
+            wipe(pin, confirmation)
+            return fail(VaultError.PIN_INVALID)
+        }
+        if (!pin.contentEquals(confirmation)) {
+            wipe(pin, confirmation)
+            return fail(VaultError.MISMATCH)
+        }
+        launchBusy {
+            try {
+                if (repository.enablePin(pin)) {
+                    _ui.value = VaultUiState()
+                    onSuccess()
+                } else {
+                    fail(VaultError.SAVE_FAILED)
+                }
+            } catch (e: Exception) {
+                fail(VaultError.SAVE_FAILED)
+            } finally {
+                wipe(pin, confirmation)
+            }
+        }
+    }
+
+    fun unlockWithPin(pin: CharArray) {
+        launchBusy {
+            try {
+                when (val result = repository.unlockWithPin(pin)) {
+                    is PinResult.Success -> _ui.value = VaultUiState()
+                    is PinResult.Wrong -> _ui.value =
+                        VaultUiState(error = VaultError.PIN_WRONG, pinRemaining = result.remaining)
+                    PinResult.Disabled -> fail(VaultError.PIN_DISABLED)
+                }
+            } finally {
+                wipe(pin)
+            }
+        }
+    }
+
+    fun disablePin() = repository.disablePin()
+
+    fun keyCopy(): ByteArray? = repository.keyCopy()
+
+    fun unlockWithKey(key: ByteArray) = repository.unlockWithKey(key)
+
+    private fun wipe(vararg arrays: CharArray) = arrays.forEach { it.fill('\u0000') }
 
     private fun fail(error: VaultError) {
         _ui.value = VaultUiState(error = error)

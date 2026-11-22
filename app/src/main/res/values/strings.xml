@@ -23,4 +23,21 @@
     <string name="error_throttled">Demasiadas tentativas. Tente novamente em %1$d s.</string>
     <string name="error_corrupted">Não foi possível ler os dados do cofre.</string>
     <string name="error_save_failed">Não foi possível guardar o cofre.</string>
+    <string name="security_title">Desbloqueio rápido</string>
+    <string name="pin_dialog_title">Definir PIN de 6 dígitos</string>
+    <string name="field_pin">PIN</string>
+    <string name="field_confirm_pin">Confirmar PIN</string>
+    <string name="action_use_pin">Usar PIN</string>
+    <string name="action_use_password">Usar senha mestra</string>
+    <string name="action_use_biometric">Usar biometria</string>
+    <string name="action_enable_pin">Ativar PIN</string>
+    <string name="action_disable_pin">Desativar PIN</string>
+    <string name="action_enable_biometric">Ativar biometria</string>
+    <string name="action_disable_biometric">Desativar biometria</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="biometric_prompt_title">Desbloquear o Cipherly</string>
+    <string name="error_pin_invalid">O PIN deve ter exatamente 6 dígitos.</string>
+    <string name="error_pin_wrong">PIN incorreto. Restam %1$d tentativas.</string>
+    <string name="error_pin_disabled">PIN desativado após demasiadas falhas. Use a senha mestra.</string>
 </resources>

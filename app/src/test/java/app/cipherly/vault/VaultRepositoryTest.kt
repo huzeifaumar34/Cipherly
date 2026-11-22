@@ -69,4 +69,28 @@ class VaultRepositoryTest {
         assertEquals(2_000L, VaultRepository.backoffMillis(3))
         assertEquals(300_000L, VaultRepository.backoffMillis(40))
     }
+
+    @Test
+    fun `pin unlock works after locking`() = runBlocking {
+        val box = object : app.cipherly.crypto.SecretBox {
+            private val c = app.cipherly.crypto.AesGcmCipher()
+            private val k = ByteArray(32) { 1 }
+            override fun seal(plain: ByteArray) = c.encrypt(k, plain)
+            override fun open(sealed: ByteArray) = c.decrypt(k, sealed)
+            override fun destroy() = Unit
+        }
+        val wrapper = VaultKeyWrapper(defaultParams = Argon2Params(memoryKiB = 64, iterations = 1))
+        val repo = VaultRepository(
+            file = File(dir, "vault_key.bin"),
+            wrapper = wrapper,
+            clock = { now },
+            pin = PinUnlockStore(File(dir, "pin.bin"), File(dir, "attempts.txt"), box, wrapper),
+        )
+        assertEquals(false, repo.enablePin("123456".toCharArray()))
+        repo.create(password.copyOf())
+        assertEquals(true, repo.enablePin("123456".toCharArray()))
+        repo.lock()
+        assertTrue(repo.unlockWithPin("123456".toCharArray()) is PinResult.Success)
+        assertEquals(VaultState.UNLOCKED, repo.state.value)
+    }
 }
