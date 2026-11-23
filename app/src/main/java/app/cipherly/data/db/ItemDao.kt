@@ -20,6 +20,12 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE id = :id")
     suspend fun get(id: String): VaultItem?
 
+    @Query("SELECT * FROM items")
+    suspend fun all(): List<VaultItem>
+
+    @Upsert
+    suspend fun upsertAll(items: List<VaultItem>)
+
     @Upsert
     suspend fun upsert(item: VaultItem)
 

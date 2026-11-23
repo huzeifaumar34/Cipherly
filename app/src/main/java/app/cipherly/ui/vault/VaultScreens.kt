@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,6 +43,7 @@ private fun VaultScaffold(content: @Composable () -> Unit) {
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 28.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -201,6 +204,7 @@ fun UnlockedScreen(
     onCycleClipboard: () -> Unit,
     onLock: () -> Unit,
     onBack: () -> Unit,
+    extra: @Composable () -> Unit,
     onEnablePin: (CharArray, CharArray) -> Unit,
     onDisablePin: () -> Unit,
     onEnableBiometric: () -> Unit,
@@ -247,6 +251,8 @@ fun UnlockedScreen(
         TextButton(onClick = onCycleClipboard) {
             Text(stringResource(R.string.setting_clipboard, durationLabel(clipboardSeconds)))
         }
+        Spacer(Modifier.size(12.dp))
+        extra()
         Spacer(Modifier.size(16.dp))
         Button(onClick = onBack) { Text(stringResource(R.string.action_back)) }
         TextButton(onClick = onLock) { Text(stringResource(R.string.action_lock)) }

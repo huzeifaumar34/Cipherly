@@ -80,4 +80,19 @@
     <string name="setting_clipboard">Clear clipboard after: %1$s</string>
     <string name="duration_seconds">%1$d s</string>
     <string name="duration_minutes">%1$d min</string>
+    <string name="backup_title">Encrypted backup</string>
+    <string name="action_export_backup">Export backup</string>
+    <string name="action_import_backup">Import backup</string>
+    <string name="action_continue">Continue</string>
+    <string name="backup_export_title">Export backup</string>
+    <string name="backup_export_description">Choose a password for the backup file (min. 12 characters). Without it the backup cannot be restored, and it cannot be recovered.</string>
+    <string name="backup_import_title">Import backup</string>
+    <string name="field_backup_password">Backup password</string>
+    <string name="field_confirm_backup_password">Confirm backup password</string>
+    <string name="backup_export_ok">Backup exported (%1$d items).</string>
+    <string name="backup_import_ok">Imported: %1$d new, %2$d updated, %3$d skipped.</string>
+    <string name="backup_error_wrong_password">Wrong password or damaged file.</string>
+    <string name="backup_error_bad_file">This file is not a Cipherly backup.</string>
+    <string name="backup_error_too_large">The file is too large.</string>
+    <string name="backup_error_failed">The operation could not be completed.</string>
 </resources>
