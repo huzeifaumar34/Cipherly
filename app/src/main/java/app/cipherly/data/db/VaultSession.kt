@@ -2,6 +2,8 @@ package app.cipherly.data.db
 
 import android.content.Context
 import androidx.room.Room
+import app.cipherly.backup.BackupMerge
+import app.cipherly.backup.MergePlan
 import app.cipherly.domain.model.ItemRules
 import app.cipherly.domain.model.VaultItem
 import app.cipherly.vault.VaultRepository
@@ -55,6 +57,16 @@ class VaultSession @Inject constructor(
     suspend fun get(id: String): VaultItem? = db().items().get(id)
 
     suspend fun save(item: VaultItem) = db().items().upsert(item)
+
+    suspend fun allItems(): List<VaultItem> = db().items().all()
+
+    /** Merges backed-up items into the vault: new ones are added, newer ones replace older ones. */
+    suspend fun importItems(incoming: List<VaultItem>): MergePlan {
+        val dao = db().items()
+        val plan = BackupMerge.plan(dao.all().associateBy { it.id }, incoming)
+        if (plan.toWrite.isNotEmpty()) dao.upsertAll(plan.toWrite)
+        return plan
+    }
 
     suspend fun delete(id: String) = db().items().delete(id)
 

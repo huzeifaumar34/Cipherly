@@ -11,7 +11,11 @@ import android.content.IntentFilter
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.activity.result.contract.ActivityResultContracts
 import app.cipherly.biometric.BiometricUnlock
+import app.cipherly.ui.backup.BackupSection
+import app.cipherly.ui.backup.BackupViewModel
+import java.time.LocalDate
 import app.cipherly.clipboard.ClipboardHelper
 import app.cipherly.domain.model.Choices
 import kotlinx.coroutines.launch
@@ -68,6 +72,15 @@ class MainActivity : FragmentActivity() {
 
     private val vaultViewModel: VaultViewModel by viewModels()
     private val itemsViewModel: ItemsViewModel by viewModels()
+    private val backupViewModel: BackupViewModel by viewModels()
+
+    private val createBackupFile = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/octet-stream"),
+    ) { backupViewModel.exportTo(it) }
+
+    private val openBackupFile = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { backupViewModel.chooseImport(it) }
     private var backgroundedAt = 0L
     private var autoLockSeconds = UserPreferences().autoLockSeconds
 
@@ -148,6 +161,7 @@ class MainActivity : FragmentActivity() {
                         val query by itemsViewModel.query.collectAsState()
                         val editing by itemsViewModel.editing.collectAsState()
                         val itemError by itemsViewModel.error.collectAsState()
+                        val backupState by backupViewModel.state.collectAsState()
                         BackHandler(enabled = screen != ItemsScreen.List) { itemsViewModel.back() }
                         when (screen) {
                             ItemsScreen.List -> ItemListScreen(
@@ -190,6 +204,19 @@ class MainActivity : FragmentActivity() {
                                 },
                                 onLock = vaultViewModel::lock,
                                 onBack = itemsViewModel::back,
+                                extra = {
+                                    BackupSection(
+                                        state = backupState,
+                                        onExport = { pw, confirm ->
+                                            if (backupViewModel.prepareExport(pw, confirm)) {
+                                                createBackupFile.launch("cipherly-backup-${LocalDate.now()}.cpbk")
+                                            }
+                                        },
+                                        onImport = { openBackupFile.launch(arrayOf("*/*")) },
+                                        onImportPassword = backupViewModel::importWith,
+                                        onCancelImport = backupViewModel::cancelImport,
+                                    )
+                                },
                                 onEnablePin = { pin, confirm -> vaultViewModel.enablePin(pin, confirm) { } },
                                 onDisablePin = vaultViewModel::disablePin,
                                 onEnableBiometric = ::enableBiometric,
