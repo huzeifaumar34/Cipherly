@@ -119,26 +119,31 @@ class BackupCodec(
     }
 
     private fun deserialize(plain: ByteArray): List<VaultItem> = try {
-        DataInputStream(ByteArrayInputStream(plain)).use {
-            if (it.readUnsignedByte() != PLAIN_VERSION) throw BackupException(BackupError.BAD_FILE)
-            val count = it.readInt()
+        DataInputStream(ByteArrayInputStream(plain)).use { input ->
+            if (input.readUnsignedByte() != PLAIN_VERSION) throw BackupException(BackupError.BAD_FILE)
+            val count = input.readInt()
             if (count !in 0..MAX_ITEMS) throw BackupException(BackupError.BAD_FILE)
-            List(count) {
-                val id = it.readUTF()
-                val type = ItemType.entries.firstOrNull { t -> t.name == it.readUTF() }
+            val items = ArrayList<VaultItem>(count)
+            repeat(count) {
+                val id = input.readUTF()
+                val typeName = input.readUTF()
+                val type = ItemType.entries.firstOrNull { t -> t.name == typeName }
                     ?: throw BackupException(BackupError.BAD_FILE)
-                VaultItem(
-                    id = id,
-                    type = type,
-                    title = it.readUTF(),
-                    username = it.readUTF(),
-                    secret = it.readUTF(),
-                    url = it.readUTF(),
-                    notes = it.readUTF(),
-                    createdAt = it.readLong(),
-                    updatedAt = it.readLong(),
+                items.add(
+                    VaultItem(
+                        id = id,
+                        type = type,
+                        title = input.readUTF(),
+                        username = input.readUTF(),
+                        secret = input.readUTF(),
+                        url = input.readUTF(),
+                        notes = input.readUTF(),
+                        createdAt = input.readLong(),
+                        updatedAt = input.readLong(),
+                    ),
                 )
             }
+            items
         }
     } catch (e: IOException) {
         throw BackupException(BackupError.BAD_FILE, e)
