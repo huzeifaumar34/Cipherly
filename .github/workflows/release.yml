@@ -1,0 +1,82 @@
+name: Release
+
+# Runs only when a version tag such as v0.2.0 is pushed.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing secret $name"
+              exit 1
+            fi
+          done
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 17 SDK
+        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Test and build signed release
+        env:
+          CIPHERLY_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          CIPHERLY_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CIPHERLY_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CIPHERLY_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: >
+          ./gradlew --no-daemon testDebugUnitTest assembleRelease
+          -PversionName="${GITHUB_REF_NAME#v}"
+          -PversionCode="${{ github.run_number }}"
+
+      - name: Verify the APK signature
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --print-certs "$APK"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          cp "$APK" "cipherly-${GITHUB_REF_NAME}.apk"
+          sha256sum "cipherly-${GITHUB_REF_NAME}.apk" > "cipherly-${GITHUB_REF_NAME}.apk.sha256"
+          gh release create "$GITHUB_REF_NAME" "cipherly-${GITHUB_REF_NAME}.apk" "cipherly-${GITHUB_REF_NAME}.apk.sha256" \
+            --title "Cipherly ${GITHUB_REF_NAME}" --generate-notes
+
+      - name: Remove keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"

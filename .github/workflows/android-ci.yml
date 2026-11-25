@@ -32,4 +32,4 @@ jobs:
         run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Run tests, lint and assemble
-        run: ./gradlew --no-daemon clean testDebugUnitTest lintDebug assembleDebug
+        run: ./gradlew --no-daemon clean testDebugUnitTest lintDebug assembleDebug assembleRelease

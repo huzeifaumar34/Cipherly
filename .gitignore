@@ -16,3 +16,9 @@ keystore/
 *.cipherly
 .env
 .env.*
+
+# Signing material must never be committed
+*.jks
+*.keystore
+*.p12
+keystore.properties
